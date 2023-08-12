@@ -1,0 +1,65 @@
+@charset "UTF-8";
+.container {
+	height : 880px;
+}
+.content{
+	flex: none;
+    margin: auto ;
+    max-width: 476px;
+    word-wrap: break-word;
+    box-sizing: border-box;
+}
+
+#title{
+	color: #3a3a3a;
+    margin-top: 30px;
+    padding: 0 0 40px 0;
+    font-size: 2rem;
+    text-align: center;
+    font-weight: 700;	
+}
+
+label {
+	font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,"Malgun Gothic","맑은 고딕",돋움,Dotum,sans-serif;
+	font-size: 1.6rem;
+    padding-bottom: 10px;
+    display : block;
+    width : 450px;
+}
+
+.id, .email, .pw {
+	margin-top : 30px;
+}
+
+input{
+	width : 450px;
+	height : 54px;
+    padding: 17.5px 0 17.5px 30px;
+    font-size: 1.6rem;
+    box-sizing: border-box;
+    border-radius: 4px;
+    -webkit-appearance: none;
+    border: 0;
+    display: block;
+    border : #778899 solid 1px;
+    font-size : 15px;
+}
+
+.result {
+	margin-top : 40px;
+	width :450px;
+	height : 54px;
+}
+
+#submit, #reset {
+	padding : 17.5px 30px;
+	font-size : 1.6rem;
+	border-radius : 4px;
+	width: 220px;
+	border : none;
+}
+
+#submit {
+	background-color: darkseagreen;
+	color :white;
+}

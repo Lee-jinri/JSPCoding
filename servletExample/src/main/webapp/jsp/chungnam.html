@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
+		<title>Insert title here</title>
+		
+		<!-- 모바일 웹 페이지 설정 -->
+		<link rel="shortcut icon" href="../image/icon.png" />
+		<link rel="apple-touch-icon" href="../image/icon.png" />	
+	
+		<!--[if lt IE 9]>
+		<script src="../js/html5shiv.js"></script>
+		<![endif]-->
+		
+		<!-- jQuery 파일을 다운받아 로드하는 방법 -->
+		<!-- <script type="text/javascript" src="../js/jquery-1.12.4.min.js"></script> -->
+		<script type="text/javascript" src="../js/jquery-3.6.0.min.js"></script>
+		
+		<!-- CDN(Content Delivery Network: 콘텐츠 전송 네트워크)을 이용하여 로드하는 방법 -->
+		<!-- <script src="https://code.jquery.com/jquery-3.6.0min.js"></script> -->
+		
+		<link rel="stylesheet" type="text/css" href="../css/chungnam.css"/>
+		<link rel="stylesheet" type="text/css" href="../css/lightbox.css"/>
+		<script type="text/javascript" src="../js/lightbox.js"></script>
+				<!-- 공통 css -->
+		<link rel="stylesheet" type="text/css" href="../css/reset.css"/>
+		<link rel="stylesheet" type="text/css" href="../css/common.css"/>
+		
+		<script type="text/javascript">
+			
+			// 이름이 template인 함수 : 매개변수로 값을 전달받음, 복제해서 화면구현, 데이터는 ajax로 받음
+			function template(local_nm, type, nm, nm_sub, desc, list_img){
+				// ul태그를 객체화
+				let $ul = $('#list');
+				
+				// item-template li태그를 복제함, 아이디는 유일해야하기때문에 아이디 속성 삭제
+				let $element = $('#item-template').clone().removeAttr('id');
+				
+				// li태그 안의 span태그 안의 a태그 : 속성 추가, 클릭했을 때 list_img보여줌
+				// JSON형태로 추가함 ({}) , 라이트박스의 속성으로 title은 이미지 클릭했을때 이미지 이름
+				$element.find('.item-thumb > a').attr({"href":list_img, "title":nm_sub });
+				// 이미지 태그에 속성 추가
+				$element.find('.item-thumb > a > img').attr("src",list_img);
+				// 충남xml의 type을 span태그 item_type에 추가
+				$element.find('.item-type').html(type);
+				// 충남xml의 nm을 span태그 item_title에 추가
+				$element.find('.item-title').html(nm);
+				$element.find('.item-sub').html(nm_sub);
+				$element.find('.item-content').html(desc);
+				
+				$ul.append($element);
+			}
+		
+			$(function(){
+				$.ajax({
+					url:"../xml/chungnam.xml",
+					type: "get",
+					dataType : "xml",
+					success : function(data){
+						$(data).find('item').each(function(){
+							let local_nm = $(this).find("local_nm").text();
+							let type = $(this).find("type").text();
+							let nm = $(this).find("nm").text();
+							let nm_sub = $(this).find("nm_sub").text();
+							let desc = $(this).find("desc").text();
+							let list_img = $(this).find("list_img").text();
+							
+							// 데이터를 template 함수에 전달
+							template(local_nm, type, nm, nm_sub, desc, list_img);
+						});
+					
+					},error: function(xhr, textStatus, errorThrown){
+						alert(textStatus + " (HTTP-" + xhr.status + "  " + errorThrown + ")" );
+					}
+				})
+			});
+		</script>
+	</head>
+	
+	<body>
+		<h1 class="title">충남관광 - 관광명소</h1>
+		<!-- 목록이 출력될 요소 -->
+		<ul id="list">
+			<li id="item-template" class="item">
+				<!-- 이미지를 클릭하면 원본 이미지로 보여주는 것 -->
+				<!-- data-이름="식별자" : 값을 구분짓기 위해 만든 속성 -->
+				<span class="item-thumb"><a data-lightbox="roadtrip"><img /></a></span>
+				<span class="text">
+					<span class="item-type"></span>
+					<span class="item-title"></span>
+					<span class="item-sub"></span>
+					<span class="item-content"></span>
+				</span>
+			</li>
+		</ul>
+	</body>
+</html>

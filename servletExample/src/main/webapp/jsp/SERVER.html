@@ -1,0 +1,596 @@
+<!-- 
+
+	
+GET 방식 
+ 1. 사용자가 브라우저에 URL을 직접 입력하는 경우
+ 2. <a href=""></a>를 명시해주는 경우
+ 3. <form method="get"></form>
+ 
+ get 요청 : http://localhost:8080/servletExample/memberDelete?m_id=javauser
+ 
+POST 방식
+ 1. <form method="post"></form> 
+ 
+ post 요청 : 
+	<form method="post" action="/servletExample/memberDelete">
+		<input type="hidden" name="m_id" value="javauser" />
+	</form>
+	
+<JDBC>
+ - 응용프로그램과 DBMS(Database Management System) 사이의 다리 역할
+ - JDBC 인터페이스와 JDBC 드라이버로 구성되어 있습니다
+ - 응용프로그램에서 SQL 문을 만들어 JDBC 인터페이스를 통해 전송하면 JDBC 드라이버에서 DBMS에 접속을 시도하며 SQL문을 전송하는 역할을 수행합니다
+
+DATAFLOW	
+
+1. Class.forName("패키지명.드라이버클래스명");
+	 -> 선택한 DB 제품군을 Class.forName()의 파라미터로 전달해 줍니다
+  ex) Class.forName("oracle.jdbc.driver.OracleDriver");
+  
+2. Connect : Connecction 인터페이스는 Database와 연결된 세션 역할을 수행합니다
+			결과적으로 이 세션을 통해 Database에 SQL을 전송하고 ResultSet 리턴 받게 됩니다
+			
+  사용자 ID와 PW가 미정의된 경우 : connection = DriverManager.getConnection("JDBC URL");
+  사용자 ID와 PW가 정의된 경우 : connection = DriverManager.getConnection("JDBC URL", "user ID", "password");
+  Oracle에 연결하는 경우 : connection = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:xe",  "user ID", "password");
+
+  ex) 
+    Connection connection = null;
+	String url = "jdbc:oracle:thin:@192.168.1.1:1521:xe";
+	String user = "coil";
+	String password = "4321";
+		
+	Class.forName("oracle.jdbc.driver.OracleDriver");
+	connection = DriverManager.getConnection(url, user, password);
+	
+	
+3. 상태 객체 생성 Statement : 실행 객체는 Connection을 통해 접속된 DBMS 서버에  SQL 명령을 전달할 수 있게끔 해줍니다.
+	Connection conn;
+	String sql = "SELECT COUNT(*) FROM ST WHERE ST_CODE = ?";
+
+	PreparedStatement pstmt = conn.prepareStatement(sql);
+
+4. 결과 객체 생성 ResultSet 
+ : 상태 메서드(Statement, PreparedStatement) 가 준비되었다면 executeQuery(), executeUpdate(), execute()과 같은 수행 메서드를 사용하여 상태 메서드를 실행시켜줍니다
+   그러면 Connection으로 연결된 DBMS 서버에 SQL 명령이 전달됩니다
+
+	ex) 전달된 SQL 명령의 결괏값을 ResultSet 타입의 변수에 저장
+		ResultSet rs = pstmt.executeQuery();
+	
+	
+5. close() : JDBC 데이터 플로우가 끝나면 메서드 등을 사용하여 Connection 을 close() 해줍니다
+	
+	ex)
+	public void connectionClose(Connection conn) {
+		conn.close();
+	}
+	
+	
+<SQL 수행 메서드>
+1. executeQuery()
+사용할 수 있는 쿼리 : SELECT 
+반환 값 :ResultSet, null
+
+ex)
+ResultSet rs = null;
+String sql = "SELECT COUNT(*) FROM ST WHERE ST_CODE = ?";
+
+PreparedStatement pstmt = conn.prepareStatement(sql);
+rs = pstmt.executeQuery();
+
+2. executeUpdate()
+사용할 수 있는 쿼리 : INSERT, UPDATE, DELETE, CREATE, DROP, ALTER
+반환 값 : 처리된 레코드의 개수
+
+<서블릿 포워드 기능>
+1. 포워드 기능이란?
+ 하나의 서블릿에서 다른 서블릿이나 JSP와 연동하는 것
+ 
+2. 포워드 기능의 용도
+ - 요청에 대한 추가 작업을 다른 서블리에게 수행하게 함
+ - 요청에 포함된 정보를 다른 서블릿이나 JSP와 공유함
+ - 요청에 정보를 포함시켜 다른 서블릿에 전달할 수 있음
+ - 모델2 개발 시 서블릿에서 JSP로 데이터를 전달하는 데 사용됨.
+
+<바인딩>
+ 전달하는 데이터의 양이 적을 때는 GET방식이 편리하지만
+ 서블릿에서 조회한 대량의 정보를 서블릿으로 전달할 때는 바인딩 기능을 사용한다.
+ 바인딩은 두 개를 하나로 묶는 것. 웹 프로그램 실행 시 데이터(자원)를 서블릿 관련 객체에 저장하는 방법
+ 저장된 데이터(자원)는 프로그램 실행 시 서블릿이나 JSP에서 공유하여 사용한다.
+ 주로 HttpServletRequest, HttpSession, ServletContext 객체에서 사용함.
+ 
+ - 웹 프로그램 실행 시 데이터(자원)를 서블릿 관련 객체에 저장하는 것
+ - 서블릿에서 다른 서블릿 또는 JSP로 데이터를 공유하거나 전달할 때
+ 
+ <서블릿 객체에서 사용되는 바인딩 메서드>
+ setAttribut(String name,Object obj) : 데이터를 각 객체에 바인딩한다. 데이터는 무조건 오브젝트로 담김
+ getAttribute(String name) : 각 객체에 바인딩된 데이터를 name으로 가져옴. 반환타입 오브젝트 -> 강제형변환 필수
+ removeAttribute(String name) : 각 객체에 바인딩 된 데이터를 name으로 제거
+ 유효범위 : 요청페이지까지만 유효함. 그래서 HttpSession에 사용자 로그인 정보등을 담아서 로그아웃할 때까지 사용함. (정보 공유)
+
+<상태정보 유지>
+- HTTP는 비연결성과 무상태로 동작하는 프로토콜임 : 요청에 응답할 때만 클라이언트와 서버가 연결되고 이후에는 연결 자동 종류
+- 그래서 상태 정보 유지 기술(상태정보를 일정시간동안 지속해서 유지해주는 기술)이 필요하다.
+- ex) 장바구니, 로그인 등 
+
+1. 클라이언트 측에 저장하여 유지하는 기술 (쿠키, ex)오늘 다시 보지 않음)
+-javax.servlet.http.Cookie : 쿠키 기능이 있는 객체, 저장 데이터 타입 : 텍스트, 저장 데이터 크기 : 제한 있음
+
+2. 서버측에 저장하여 유지하는 기술 (세션, context)
+-javax.servlet.ServletContext : 포워드할 때까지만 정보 유효, 가장 유효범위 넓음
+-javax.servlet.http:HttpSesion : 사용자별로 정보 유효
+-javax.servlet.http.HttpServletRequest : 요청->응답할 때까지만 정보 유효, 가장 유효범위 좁음
+
+
+[자원이나 정보를 바인딩 할 때 사용하는 클래스]
+ <ServletContext>
+ 	- 톰캣 컨테이너 실행시 (서버 킬 때), 각 웹 애플리케이션마다(다이나믹 프로젝트) 한 개의 ServletContext 객체를 생성한다.
+ 	- 톰캣 컨테이너 종료하면 ServletContext 객체도 소멸된다.
+ 	- 유효범위가 가장 넓다. (전체 서블릿이 공유 -> 서버가 종료될 때까지 사용할 수 있음)
+ 	- ※ 애플리케이션 전체의 공통 자원이나 정보를 미리 바인딩할 때 사용!!!! ※ 
+ 	- 간단하게 웹 컨텍스트 또는 컨텍스트라고도 한당.
+ 	
+ 	- 사용 : ServletConfig의 getServletContext() 메소드를 사용함
+ 	
+ 	(제공하는 기능)
+ 	- 서블릿에서 파일 접근 기능 
+ 	- 자원 바인딩 기능 (서버에 속성명과 속성값을 설정하는 것)
+ 	- 로그 파일 기능
+ 	- 컨텍스트에서 제공하는 설정 정보 제공 기능
+ 	
+ 	- ServletContext에서 제공하는 주요 메서드
+ 	1. getAttribute(String name) : 주어진 name을 이용해 바인딩된 value를 가져온다. name이 존재하지 않으면 null 반환
+ 	2. setAttribute(String name, Object object) : 해당 name으로 객체를 ServletContext에 바인딩한다.
+ 	3. getInitParmeter(String name) : name에 대한되는 매개변수의 초기화 값을 반환, 매개변수 존재하지 않으면 null 반환
+ 	4. getRealPath(String path) : 지정한 path에 해당되는 실제 경로 반환.
+ 	
+ <ServletConfig>
+ 	- 톰캣 컨테이너 실행시 객체 생성됨.
+ 	- 각 서블릿에 하나씩 생성됨! (Context와 차이)
+ 	- 유효범위 : 각 서블릿에서만 사용할 수 있음.
+ 
+ 	(제공하는 기능)
+ 	- ServletContext 객체를 얻는 기능 (각 서블릿 객체에 대해 생성, 서블릿에 관련된 기능을 사용할 수 있도록 메서드 제공.)
+ 	(각 서블릿에서만 접근할 수 있으며 공유 불가능)
+ 	- 서블릿에 대한 초기화 작업 기능
+ 	
+ 	<WebServlet 어노테이션을 이용한 서블릿 설정 (매핑 정보 있는 부분)>
+	- urlPatterns : 웹 브라우저에서 서블릿 요청시 사용하는 매핑 이름 (매핑 이름을 여러개 줄 수 있음!)
+	- name : 서블릿 이름
+	- loadOnStartup : 컨테이너 실행 시 서블릿이 로드되는 순서 지정 (사용자 요청과 관계없이 미리 실행시킬 수 있음)
+					  지정한 숫자가 0보다 크면 톰캣 컨테이너가 실행되면서 서블릿이 초기화, 지정한 숫자는 우선순위
+					  어노테이션으로 설정하는 방법과 web.xml에 설정하는 방법이 있다.
+	- initParams : @WebInitParam 어노테이션을 이용하여 매개변수를 추가하는 기능 (초기 파라미터 설정 가능, 어노테이션과 함께 작성해야함)
+	- description : 서블릿에 대한 설명 		
+ 	
+ <HttpSession>	
+ 	- javax.http.HttpSession
+	- GenericServlet을 상속받아서 만들어짐 
+	- 클라이언트 단위로 유지, 클라이언트 별로 구분해서 상태 정보를 유지한다는 의미
+	- javax.servlet.http.Cookie과 차이는 쿠키는 저장위치가 클라이언트 쪽, 쿠키는 보안 취약
+	- 저장위치 : 서버, 저장 데이터 타입 : 객체, 저장 데이터 크기 : 서버에서 수용할 수 있는 만큼, 보안 : 강력함
+ 	- 사용자마다 세션이 만들어짐. 
+ 	- Session 객체가 생성될 때 클라이언트 정보, 요청 시간 정보등을 조합한 세선 ID가 부여됨 -> 동일한 사용자인지 식별, 쿠키로 저장
+ 	- time-out 제한은 기본 30분
+ 	
+ 	Request의 getSession(), getSession(true) 메서드로 생성, false면 세션 생성 X -> 기존의 세션을 사용하겠다.
+ 	
+ 	(세션 트래킹) : 클라이언트마다 상태정보를 일정 시간 동안 개별적으로 유지하여 사용하는 기술
+ 	- 구현 순서
+ 	1. 클라이언트를 위한 세션을 준비한다. 이전에 이 클라이언트를 위해 생성된 세션이 존재하면 세션을 추출하고, 없으면 새로 생성
+ 	  세션이 새로 생성될 때는 고유한 ID가 부여되며 클라이언트에 쿠키 기술로 저장됨(사용자 구별) getSession()
+ 	2. 유지하고자 하는 정보를 저장할 목적의 객체를 생성하여 세션에 등록한다. setAttribute
+ 	3. 클라이언트가 요청을 전달할 때마다 세션에 등록된 정보를 담고 있는 객체를 추출하여 원하는 기능에 사용한다.
+ 	4. 세션이 더 이상 필요없는 시점에 세션 삭제 (로그아웃)
+ 	 	
+ <Cookie>
+ 	- javax.servlet.http.Cookie 사용
+ 	- HttpServletResponse의 addCookie() 메서드를 사용하여 클라이언트 브라우저에 쿠키를 전송 후 저장
+ 	- HttpServletRequest의 getCookie() 메서드를 사용하여 쿠키를 서버로 가져온다.
+ 	- 웹 페이지들 사이의 공유 정보를 클라이언트 PC에 저장하여 사용하는 방법
+ 	- 저장 정보 용량 제한 (파일은 4kb)
+ 	- 보안 취약
+ 	- 클라이언트 브라우저에서 사용 유무 설정
+ 	- 도메인당 쿠키가 만들어짐(웹 사이트당 하나의 쿠키)
+ 	
+ 	(쿠키 생성)
+ 	Cookie cookie = new Cookie (name, value);
+ 	- 쿠키는 이름, 값의 정보를 쌍으로 입력하여 생성
+ 	- 쿠키의 이름은 알파벳과 숫자로만 구성, 쿠키 값은 공백,괄호,등호,콤마,콜론,세미콜론 등은 사용 불가
+ 	
+ 	(클라이언트 컴퓨터에 파일 형태로 저장)
+ 	response.addCooke(cookie);
+ 	- 내장객체 response의 addCookie 메소드 사용
+ 	
+ 	(쿠키의 종류)
+ 	- Persistence 쿠키
+ 	생성 위치 : 파일로 생성
+ 	종료 시기 : 쿠키를 삭제하거나 쿠키 설정 값이 종료된 경우
+ 	최초 접속 시 전송여부 : 최초 접속 시 서버로 전송
+ 	용도 : 로그인 유무 또는 팝업창 제한
+ 	
+ 	- Session 쿠키
+ 	생성 위치 : 브라우저 메모리에 생성
+ 	종료 시기 : 브라우저를 종료한 경우
+ 	최초 접속 시 전송여부 : 최초 접속 시 서버로 전송되지 않음
+ 	용도 : 사이트 접속 시 Session 인증 정보를 유지할 때 (동일한 사용자인지 아닌지 판단할 때) 		
+ 	
+ 	(쿠키의 진행 흐름)
+ 	- 최초 접속시
+ 	1. 브라우저로 사이트에 접속
+ 	2. 서버가 정보를 저장한 쿠키를 생성
+ 	3. 생성된 쿠키를 브라우저로 전송
+ 	4. 브라우저는 서버로부터 받은 쿠키 정보를 쿠키 파일에 저장	
+ 	- 재접속시
+ 	5. 브라우저가 다시 접속해 서버가 브라우저에게 쿠키 전송을 요청하면 브라우저는 쿠키 정보를 서버에 넘겨줍니다.
+ 	- 쿠키 조회 (Cookie[] cookies = request.getCookies();
+ 	6. 서버는 쿠키 정보를 이용해 작업을 합니다.
+ 	
+ 	(쿠키 클래스의 여러가지 메서드)
+ 	getComment() : 쿠키에 대한 설명
+ 	getDomain() : 쿠키의 유효한 도메인 정보를 가져온다.
+ 	getMaxAge() : 쿠키 유효기간
+ 	getName() : 쿠키 이름, String으로 반환
+ 	getPath() : 쿠키의 디렉터리 정보를 가져옵니다.
+ 	getValue() : 쿠키의 설정 값을 가져옵니다., String으로 반환
+ 	setComment(String) : 쿠키에 대한 설명을 설정
+ 	setDomain(String) : 쿠키의 유효한 도메인을 설정
+ 	setMaxAge(int) : 쿠키의 유효기간 설정 (초 단위), void로 반환, 음수(-1)면 브라우저가 종료될 때 쿠키도 바로 만료
+ 					 (2분 : 2*60 , 1주일 : 7*24*60*60, 365일 : 365*24*60*60)
+ 	setValue(String) : 쿠키 값을 설정, void로 반환
+ 	
+ 	 	
+<외부의 문서(html, xml, json, image 등)를 읽어 사용자 브라우저로 응답하는 법>
+- 코드에서 각각의 문서 타입으로 생성하여 응답 (ResponseServlet.java)
+html 문서 타입 : text/html; charset=utf-8
+xml 문서 타입 : application/xml; charset=utf-8
+json 문서 타입 : text/json; charset=utf-8
+이미지 문서 타입 : image/jpg   , gif png 다 가능 
+
+<스크립트 태그>
+<액션 태그>
+- JSP 페이지에서 자바 코드 등의 스크립트 언어를 사용하지 않고도 다른 페이지의 서블릿이나 자바빈의 객체에 접근할 수 있도록 
+	태그를 이용하는 기능
+- 액션 태그를 사용하면 사용자에게 보여지는 프리젠테이션 부분과 사용자의 요청으 ㄹ처리하는 비즈니스 로직 부분을 분리하는 것이 가능
+- JSP 컨테이너에서 기본으로 제공하는 태그
+
+<태그 라이브러리 : 태그명 />
+
+- 자바 빈(Bean) 
+ : 프로그래밍 시 여러 객체를 거치면서 만들어지는 저장하거나 전달하는 데 사용되는 클래스
+   자바의 DTO 클래스, VO 클래스와 같은 개념
+
+- 자바 빈의 특징
+  : 속성 접근 제한자는 private 
+    속성은 각각의 setter/getter를 가짐
+    setter/getter 이름의 첫 글자는 반드시 소문자(public 접근제한자)
+    인자 없는 생성자(디폴트 생성자)를 반드시 가지며 다른 생성자도 추가할 수 있음
+    기본 패키지에 존재할 수 없다.
+    
+<jsp:userBean id="빈 이름" class="자바빈 클래스 이름" /> : 자바빈 객체 생성, 패키지 명까지 명시
+id : 문자열 , JSP 페이지에서 자바 빈즈의 참조 변수를 저장하는 변수 이름
+class : 문자열, 생성할 자바 빈즈의 클래스 이름
+scope : page, request, session application 자바 빈즈의 유효 범위, 디폴트는 page(현재 페이지 내에서만 인스턴스 유효)
+
+<jsp:setProperty name="빈이름" property="메서드명" value="값"/> : 생성된 자바 빈즈 객체를 이용해 setter에 속성 값을 전달
+name : 문자열, useBean 에서 지정한 id 이름
+property : 문자열 , 자바 빈즈의 setter() 의 이름으로 setName()에서 set을 제거한 name으로 지정, 값이 *면 파라미터의 모든 값
+param : 문자열, property와 함께 쓰이며 지정된 파라미터로 전달받은 파라미터의 이름
+value : 문자열, property와 함께 쓰이며 setter()의 인자(매개변수)값인 value를 지정
+
+<jsp:getProperty name="빈이름" property="메서드명" /> : 생성된 자바 빈즈 객체를 이용해 getter로 속성 값을 반환, out.print까지
+name : 문자열, useBean에서 지정한 id 이름
+property : 자바 빈즈의 getter() 이름
+
+
+<자동 커밋하지 않을 때>
+
+// 자동 커밋 false 
+conn.setAutoCommit(false);
+
+conn. commit(); // 수동 커밋
+}catch(SQLException ex){
+	if(conn != null){ // 오류나면 수동 롤백 해야됨
+		conn.rollback();
+
+<커넥션 풀(Database Connection Pool)>
+- 데이터베이스 연결 작업은 서버의 자원을 이용하는 작업으로, 계속적으로 발생한다면 시스템에 상당한 부하를 준다.
+- 커넥션 문제를 해결하기 위해 데이터베이스 커넥션 풀(DBCP) 사용
+- 커넥션 객체를 웹 애플리케이션이 서비스되기 전에 웹서버에 미리 생성하여 준비하고, 준비된 커넥션을 가져다 사용한다.
+- 커넥션 풀 만들고, 커넥션 풀이 필요하면 작성한 객체 할당, 사용 후 다시 커넥션 풀로 회수
+- service() 메소드(사용자 요청)당 1개씩 할당, 커넥션 개수 제한
+
+<DataSource>
+- 커넥션 풀을 관리하는 목적으로 사용하는 객체
+- DataSorce 객체를 통해 커넥션을 얻어오고 반납하는 등의 작업 수행
+
+<이용 방법>
+1. JNDI Server에서 lookup() 메서드를 통해 DataSource 객체 획득
+2. DataSource 객체의 getConnection() 메소드를 통해 Connection Pool에서 Free 상태의 Connection 획득
+3. Connection 객체를 통한 DBMS 작업을 수행
+4. 모든 작업이 끝나면 DataSource 객체를 통해 Connection Pool 반납
+
+<JNDI (Java Naming and Directory Interface)>
+- 디렉터리 서비스에 접근하는데 필요한 API
+- API와 SPI로 이루어져 있다.
+- API는 애플리케이션에서 네이밍 혹은 디렉터리 서비스에 접근하는데 사용
+- SPI는 새로운 서비스를 개발할 때 사용된다.
+- 자원을 서버에 등록할 때 고유한 JNDI 이름을 붙이며 명칭은 일반적으로 디렉토리 경로 형태를 가짐.
+- 서버에서 자원을 찾을 때 기본 JNDI 이름은 "java/comp/env/응용프로그램환경항목" 
+
+<Naming & Directory>
+자원의 획득과 이용의 효율성을 위해 제공하는 서비스 
+
+<커넥션 풀 사용을 위한 준비>
+- javax.naming.InitialContext, 인터페이스 javax.sql.DataSource의 사용을 위해 import 해야함
+	<%@ page import="java.sql.*, javax.sql.*, javax.naming.*" %>
+- 객체 IitialContext를 생성
+	Initialcontext ctx = new InitialContext();
+- lookup을 이용해 DataSource 객체르 ㄹ찾는다. 
+	DataSource ds = (DataSource)ctx.lookup("java:conp/env/jdbc/Oracle18c");
+- DataSource 객체의 메소드 getConnection()을 호출하여 커넥션 객체 con을 얻는다.
+	Connection con = ds.getConnection();
+
+<표현 언어 (Expression Language)>
+- JSP 페이지에서 이용되는 여러 외부 데이터 객체를 쉽고 간편하게 참조하기 위한 언어
+
+<%= request.getParameter("userid")%> 표현식을
+ ${ param.userid }
+ ${ param['userid']}
+ ${ param["userid"]} 로 더 쉽게 참조하도록 함.
+param이라는 내장 객체로 값을 받는다.
+
+<표현 언어의 주요 기능>
+- JSP의 4가지 기본 객체가 제공하는 영역의 속성 사용
+- 집합 객체에 대한 접근 방법 제공 (List, Set, Map)
+- 수치 연산, 관계 연산, 논리 연산자 제공 (and, or...)
+- 자바 클래스 메서드 호출 기능 제공 
+- 표현 언어만의 기본 객체 제공
+- ※스크립트 요소(스크립트릿, 표현식, 선언부)를 제외한 나머지 부분에서 사용한다. -> <% 표현언어 %> 불가능, 
+   스크립트 요소와 표현언어를 함께 사용할 수 없음
+
+- 영역(Scope)와 속성(Attribute)
+  공유되는 데이터를 속성이라하고 
+  속성을 공유할 수 있는 유효 범위를 영역이라고 한다.
+  영역객체로는 page, session, request, application 
+
+- 영역 객체
+  page : 하나의 JSP 페이지 안에서만 유효, page 내장 객체가 아닌 pageContext 내장 객체로 접근
+  request : 하나의 클라이언트 요청을 처리하는 동안 유효 (포워드 된 페이지까지)
+  session : 하나의 웹 브라우저와 관련된 영역까지 유효 (ex 로그인)
+  application : 하나의 웹 어플리케이션(프로젝트)과 관련된 영역까지 유효
+※ page는 pageContext 객체를 사용하고 다른 것은 request 객체 사용
+
+setAttribute(String key, Object obj) : 해당 영역에 key값의 이름을, obj 객체를 등록, 반환형 void
+getAttribute(String key) : key값으로 등록되어 있는 속성을 Object 타입으로 반환
+removeAttribute(String key) : key값으로 등록되어 있는 속성을 제거
+getAttributeNames() : 해당 영역에 등록되어 있는 모든 속성들의 이름을 Enumeration 타입으로 리턴
+
+<영역 객체의 속성 설정>
+pageContext.setAttribute("message1","PageContext 객체에 저장된 문자열 객체");
+request.setAttribute("message","HttpServletRequest 객체에 저장된 문자열 객체");
+session.setAttribute("massage3","HttpSession 객체에 저장된 문자열 객체");
+application.setAttribute("massage","ServletContext 객체에 저장된 문자열 객체");
+
+<영역 객체의 속성 추출>
+pageScope 객체에서 추출 : ${ pageScope.message1 }
+requestScope 객체에서 추출 : ${ requestScope.message }
+sessionScope 객체에서 추출 : ${ sessionScope.massage3 }
+applicationScope 객체에서 추출 : ${ applicationScope.massage }
+
+속성 이름만 쓰면 page -> request -> session -> application의 순서대로 message라는 속성이 있는지 확인함 
+== request 객체의 속성을 추출함!
+message 추출 : ${message }
+
+<표현 언어의 사용>
+${ 문자 or 연산자 or 변수 } -> 이때의 변수는 속성임 (자바 변수가 아님!)
+
+- 표현 언어는 $로 시작한다.
+- 표현 언어 안에서는 산술, 관계, 논리와 같은 기본적인 연산이 가능하다.
+- 표현 언어에서는 객체명.속성명, 객체명[첨자], 객체명["속성명"], 객체명['속성명']과 같은 구조로 구성된다.
+
+<표현 언어의 변수>
+- 표현언어에서 이용하는 변수는 pageContext.findAttribute(변수명)으로 조회되는 변수의 평가값으로 사용된다.
+  ${ product }
+- JSP 엔진은 page, request, session, application 범위에서 등록된 product를 평가하여 그 값을 반환한다.
+  만일 product를 찾을 수 없다면 null 반환. 
+  
+<표현 언어의 연산자>
+- 나누기 div, 나머지 mod 지원
+- 논리 연산자 and, or not 지원
+- 관계 연산자 lt(less than), le(less than or equal), eq(equal), ne(not equal), ge(greater than or equal),
+  		   gt(greater than) 지원
+- empty 연산자 empty 비어있으면 true?
+
+<표현 언어의 내장 객체>
+- 요쳥 매개 변수 
+param : 요청 매개변수 <매개변수이름,값>을 저장한 Map 객체, ${param.속성명}은 request.getParameter("속성명")을 대체
+paramValues : 요청 매개변수 배열을 <매개변수이름,값>으로 저장한 Map 객체, ${paramValues.name}은 request.getParameterValues() 
+
+- 요청 헤더
+header : 요청 정보 헤더의 <헤더이름,값>을 저장한 Map 객체, ${header["name"]}은 request.getHeader(헤더이름)과 같음
+headerValues : 요청 정보 헤더의 배열을 <헤더이름,값>으로 저장한 Map 객체, ${headerValues["name"]}은 request.getHeaders() 
+
+- 초기화 매개변수
+initParam : 초기화 매개변수의 <이름,값>을 저장한 Map 객체, ${initParam.name}은 application.getInitParameter(name)과 같음
+cookie : 쿠키 정보의 배열을 <쿠키이름,값>으로 저장한 Map 객체, request.getCookies()의 쿠키 배열을 Map으로
+
+<표현언어에서 Map의 이용>
+Map에 <키,값>을 저장하려면 메소드 put(키, 값)을 이용한다.
+${<표현1>,<표현2>}
+
+<MVC 패턴 (Modle-View-Controller,모델2)>
+- 웹 애플리케이션을 화면 부분, 요청 처리 부분, 로직 처리 부분으로 나누어 개발하는 방법
+- 개발 및 유지보수 편리
+- 각 기능의 재사용성 높음
+- 디자이너와 개발자의 작업 분업화 -> 쉽게 개발
+
+Controller : 사용자의 요청 및 흐름 제어 담당(어떤 비즈니스 로직을 처리해야할지 제어)
+- 서블릿이 컨트롤러의 역할
+- 클라이언트의 요청 분석
+- 요청에 대해 필요한 모델 호출
+- 모델에서 처리한 결과를 보여주기 위해 JSP 선택
+1. 뷰에서 들어온 요청을 받는다.
+2. 클라이언트가 전달한 파라미터를 추출한다.
+	String type = request.getParameter("type");
+3. 파라미터의 유효성을 검사, 유효성 검사 실패 시 다시 뷰로 이동
+4. 서비스 객체의 메서드를 호출하며 파라미터를 서비스 객체로 전달
+5. 출력 뷰 페이지로 이동
+	RequestDispatcher dp = request.getRequestDispatcher("test.jsp");
+	dp.forward(request,response);
+
+Model : 비즈니스 로직 처리
+- 데이터 베이스 연동 같은 비즈니스 로직 수행
+- 일반적으로 DAO와 VO클래스로 이루어짐 (DAO + 서비스 객체)
+
+(서비스 객체)
+	서비스 객체는 서비스를 전담 처리
+	서비스 처리를 하기 위한 내용으로만 구현된 객체를 서비스 또는 비즈니스 객체라고 한다.
+	일반 자바로 작성.
+	Plain Old Java Object = POJO로 개발한다고 함.
+	
+(DAO 객체)
+ 	데이터베이스 처리에 관한 기능만으로 구성됨.
+ 	POJO로 작성
+
+데이터베이스를 연동하는 프로그램을 개발하는 두가지 패턴
+(1) DAO(Data Access Object) 패턴
+  - 데이터 베이스를 처리하는 코드만을 관리하는 클래스
+  - 테이블 당 한 개씩 생성
+  - 특정 테이블에서 수행할 작업을 메서드로 정의해서 구현한다.
+  - 싱글톤 패턴 : 클래스 당 한 개의 객체만 생성되도록 제약하는 구현 패턴
+  
+  public class 클래스명 {
+  	private static 클래스명 instance = null; // 정적 필드
+  	
+  	public static 클래스명 getInstance(){ // 생성자를 만들 때 유일한 객체에 접근할 수 있는 정적 메서드 정의
+  		if(instance == null)
+  			instance = new 클래스명();
+  		return instance;
+  	}
+  	
+  	private 클래스명() {}...
+  }
+  
+(2) DTO(Data Transfer Object 패턴)
+	- 데이터를 다른 로직에게 전송 및 반환할 때 효율적으로 데이터를 사용할 수 있게 하는 클래스
+	- 데이터를 전송할 때 사용하는 클래스
+	- 일반적으로 도메인 객체(Domain Object), VO(Value Object)라고 한다.  
+
+(FrontController 패턴)
+ - 웹 어플리케이션 개발 시 사용자의 요청을 처리하기 위한 최초 진입점을 정의하고 사용하는 패턴
+ - 보통 서블릿으로 만듦
+ - 클라이언트의 모든 요청을 하나의 서블릿으로 처리하고 DAO클래스에 전달
+ - 프런트 컨트롤러를 사용하기 위해 클라이언트의 서비스 요청 시 요청되는 URL 패턴의 규칙을 지정해야한다.
+ - 지정된 URL 패턴과 프론트 컨트롤러를 연결한다.
+ 
+ (1) URL 패턴 지정
+  클라이언트의 요청 URL에 요청 패턴을 지정
+  일반적으로 URL의 끝에 특정 단어를 붙이는 방식. ~.do, ~.action 
+  http://서버IP번호:포트번호/context명/식별값 -> 식별값으로 무슨 요청인지 식별하는 것!!!
+  ex) 삽입 요청 /insert.co, 삭제 요청 /delete.do , 수정요청 /update.do, 조회 요청 /select.do
+  1. 서블릿의 맵핑명을 *.do의 형식으로 지정. @WebServlet("*.do");
+  2. 서블릿에서 getRequestURI() 와 getContextPath()를 사용하여 식별값을 비교처리 할 수 있다.
+	getRequestURI() : /context명/식별값 
+	getContextPath() : /context명의 길이 수
+
+ (2) 프런트 컨트롤러 등록
+  web.xml에 설정
+ 
+(서브 컨트롤러)
+ view -> front Controller -> Sub Controller  
+ 프런트 컨트롤러에서 일괄적으로 처리할 기능을 구현하고 처리가 완료된 후에는 반드시 실제 요청한 서비스를 처리하는 컨트롤러가 실행되야함.
+ 프런트 컨트롤러 다음에 실제 서비스를 처리하는 컨트롤러를 서브 컨트롤러라고 한다.
+ 프런트 컨트롤러는 어떤 요청에 대해 어떤 서브 컨트롤러가 실행되어야 하는지에 대한 정보를 알고 있어야한다.
+ 이 정보는 주로 map 객체에 저장하며 저장된 정보에서 서브 컨트롤러를 찾아서 실행한다.
+  
+ (Command 패턴)
+  클라이언트의 각 요청을 처리하는 별도 클래스를 제공하는 구현 패턴
+  하나의 명령어를 하나의 클래스가 처리하도록 설계하는 것
+  ex) 삽입 요청 -> 프런트 컨트롤러 -> InsertService -> DAO클래스 -> 데이터베이스
+
+View : 사용자에게 보여줄 화면 담당
+- JSP가 화면 기능 담당
+- 모델에서 처리한 결과 화면에 표시
+
+
+<모델2의 수행 흐름>
+DispatcherServlet : 유일한 서블릿 클래스, 모든 클라이언트의 요청을 가장 먼저 처리하는 Front Controller
+HandlerMapping : 서블릿의 매핑정보를 *.do라고 줄거임. 그 요청을 누가 처리할 건지 Map에 담아 놓음. 
+Controller : 실질적인 클라이언트 요청을 처리. 
+
+1. 클라이언트가 게시판 메뉴를 클릭하면 /getBoardList.do가 요청됨. DispatcherServlet이 요청을 받는다.
+2. DispatcherServlet이 HandlerMapping 객체를 통해 게시판 목록 요청을 처리할 GetBoardListController를 검색
+	(누가 처리할 지 Map에 저장되어 있음.)
+3. GetBoardListController의 execute() 메서드를 호출하면 게시판 목록을 보여주기 위한 로직이 처리됨.
+4. 로직 처리 후 이동할 화면 정보를 리턴 (처리결과 request 속성. session 속성, 이동할 화면 정보(파일명만, 확장자X))
+5. DispatcherServlet은 ViewResolver를 통해 접두사(경로)와 접미사(확장자)가 붙은 JSP 파일의 이름과 경로를 리턴받는다.
+6. 최종적으로 JSP 실행하고 실행 결과가 브라우저에 응답된다.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<커스텀 태그>
+- 개발자가 만들어서 사용하는 태그
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+ -->

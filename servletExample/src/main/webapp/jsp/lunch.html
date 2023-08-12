@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
+		
+		<title>select 태그와 post 방식 - lunch.html</title>
+		
+		<link rel="shortcut icon" href="../image/icon.png" />
+		<link rel="apple-touch-icon" href="../image/icon.png" />
+		
+		<!-- jQuery 파일을 다운받아 로드하는 방법 -->
+		<script type="text/javascript" src="../js/jquery-1.12.4.min.js"></script>
+		<!-- <script type="text/javascript" src="../js/jquery-3.6.0.min.js"></script> -->
+		
+		<!-- CDN(Content Delivery Network: 콘텐츠 전송 네트워크)을 이용하여 로드하는 방법 -->
+		<!-- <script src="https://code.jquery.com/jquery-3.6.0min.js"></script> -->
+			
+		<!--[if lt IE 9]>
+		<script src="../js/html5shiv.js"></script>
+		<![endif]-->
+				
+		<script type="text/javascript">
+			$(function(){
+				$("#btn").click(function(){
+					if ($("select[name='lunch'] > option:selected").index() < 0){
+						alert("점심 메뉴를 선택하세요.");
+						return;
+					}else{
+						if($("select[name='lunch'] > option:selected").size() < 2){
+							alert("메뉴를 2개 이상 선택하세요.");
+							return;
+						}
+						$("#form").attr({
+							"method":"post",
+							"action":"/servletExample/todayMenu"
+						});
+						$("#form").submit();
+					}
+				});
+			});
+		</script>
+	</head>
+	<body>
+		<h3>오늘 점심은 무엇을 먹을까? (2개이상 선택)</h3>
+		<form name="form" id="form">
+			<select name="lunch" size="4" multiple>
+				<option value="떡볶이">떡볶이</option>
+				<option value="버섯덮밥">버섯덮밥</option>
+				<option value="칼국수">칼국수</option>
+				<option value="비빔밥">비빔밥</option>
+				<option value="라면">라면</option>
+				<option value="김치김밥">김치김밥</option>
+			</select><br />
+			<input type="button" value="전송" id="btn">
+		</form>
+	</body>
+</html>
